@@ -1,0 +1,3 @@
+---
+app_port: 8080
+fuseki_version: 3.7.0

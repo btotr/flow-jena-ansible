@@ -1,0 +1,11 @@
+[Unit]
+Description=Fuseki server for SPARQL endpoint
+After=network.target
+
+[Service]
+#User=fuseki
+#Group=fuseki
+ExecStart=/usr/local/fuseki/fuseki-server --mem --port={{app_port}} --update /default
+
+[Install]
+WantedBy=multi-user.target

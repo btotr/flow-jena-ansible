@@ -1,0 +1,94 @@
+---
+
+- name: Install java
+  apt:
+    name: openjdk-8-jre
+    update_cache: yes
+
+- name: Download Fuseki Tarball
+  get_url:
+    url: "http://apache.mirrors.ionfish.org/jena/binaries/apache-jena-fuseki-{{fuseki_version}}.tar.gz"
+    dest: "/tmp/apache-jena-fuseki-{{fuseki_version}}.tar.gz"
+
+#- name: Extract Fuseki using system tar
+  # unarchive:
+  #   src: "/tmp/apache-jena-fuseki-{{fuseki_version}}.tar.gz"
+  #   dest: "/usr/local/fuseki"
+
+- name: Add fuseki group
+  group: 
+    name: fuseki
+    system: yes
+
+- name: Add fuseki user
+  user:
+    name: fuseki
+    group: fuseki
+    system: yes
+
+- name: Create run folder for shiro ini to reside in
+  file:
+    path: /usr/local/fuseki/run
+    state: directory
+    group: fuseki
+    owner: fuseki
+    mode: 0750
+
+- name: Copy over shiro security configuration
+  copy:
+    src: shiro.ini
+    dest: /usr/local/fuseki/run/shiro.ini
+    owner: fuseki
+    group: fuseki
+    mode: 0644
+
+- name: Copy over fuseki  configuration
+  copy:
+    src: config.ttl
+    dest: /usr/local/fuseki/run/config.ttl
+    owner: fuseki
+    group: fuseki
+    mode: 0644
+
+- name: Copy the flow ontology
+  copy:
+    src: flow.owl
+    dest: /usr/local/fuseki/flow.owl
+    owner: fuseki
+    group: fuseki
+    mode: 0644
+
+
+- name: Create folder for Fuseki data
+  file:
+    path: /var/lib/fuseki
+    state: directory
+    owner: fuseki
+    group: fuseki
+    mode: 0750
+
+- name: log folder for fuseki
+  file:
+    path: /var/log/fuseki
+    state: directory
+    owner: fuseki
+    group: fuseki
+
+- name: Copy over systemd service
+  template:
+    src: fuseki.service
+    dest: /etc/systemd/system
+
+- name: "Set ownership of fuseki directory"
+  file:
+    path: /usr/local/fuseki
+    state: directory
+    owner: fuseki
+    group: fuseki
+    mode: 0755
+    recurse: yes
+    
+- name: Start fuseki
+  systemd: 
+    state: started 
+    name: fuseki
